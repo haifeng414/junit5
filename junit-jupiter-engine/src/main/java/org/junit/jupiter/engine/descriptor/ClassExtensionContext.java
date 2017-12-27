@@ -17,6 +17,7 @@ import java.lang.reflect.Method;
 import java.util.Optional;
 
 import org.apiguardian.api.API;
+import org.junit.jupiter.api.TestInstance.Lifecycle;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.engine.execution.ThrowableCollector;
 import org.junit.platform.engine.ConfigurationParameters;
@@ -28,7 +29,10 @@ import org.junit.platform.engine.EngineExecutionListener;
 @API(status = INTERNAL, since = "5.0")
 public final class ClassExtensionContext extends AbstractExtensionContext<ClassTestDescriptor> {
 
+	private final Lifecycle lifecycle;
+
 	private final ThrowableCollector throwableCollector;
+
 	private Object testInstance;
 
 	public ClassExtensionContext(ExtensionContext parent, EngineExecutionListener engineExecutionListener,
@@ -36,6 +40,9 @@ public final class ClassExtensionContext extends AbstractExtensionContext<ClassT
 			ThrowableCollector throwableCollector) {
 
 		super(parent, engineExecutionListener, testDescriptor, configurationParameters);
+
+		this.lifecycle = TestInstanceLifecycleUtils.getTestInstanceLifecycle(testDescriptor.getTestClass(),
+			configurationParameters);
 		this.throwableCollector = throwableCollector;
 	}
 
@@ -47,6 +54,11 @@ public final class ClassExtensionContext extends AbstractExtensionContext<ClassT
 	@Override
 	public Optional<Class<?>> getTestClass() {
 		return Optional.of(getTestDescriptor().getTestClass());
+	}
+
+	@Override
+	public Optional<Lifecycle> getTestInstanceLifecycle() {
+		return Optional.of(this.lifecycle);
 	}
 
 	void setTestInstance(Object testInstance) {
